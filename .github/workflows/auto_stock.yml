@@ -1,11 +1,10 @@
 name: 股票自动推送
 on:
   schedule:
-    # 北京时间07:45（UTC前一天23:45）周一至周五自动执行早报
+    # 北京时间07:45（UTC前一天23:45）周一至周五早报
     - cron: "45 23 * * 1-5"
-    # 北京时间15:30（UTC当日07:30）周一至周五自动执行收盘复盘
+    # 北京时间15:30（UTC当日07:30）周一至周五收盘复盘
     - cron: "30 7 * * 1-5"
-  # 支持网页手动触发任务测试
   workflow_dispatch:
     inputs:
       task:
@@ -25,11 +24,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      # 国内清华源加速安装依赖
       - run: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-      # 统一时区为北京时间
       - run: sudo timedatectl set-timezone Asia/Shanghai
-      # 注入密钥环境变量
       - env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
@@ -41,12 +37,13 @@ jobs:
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           JUHE_KEY: ${{ secrets.JUHE_KEY }}
         run: |
-          if [[ "${{ github.event.inputs.task }}" == "morning" ]]; then
+          task=${{ github.event.inputs.task }}
+          if [[ "$task" == "morning" ]]; then
             python morning_news.py
-          elif [[ "${{ github.event.inputs.task }}" == "morning_force" ]]; then
+          elif [[ "$task" == "morning_force" ]]; then
             python morning_news.py force
-          elif [[ "${{ github.event.inputs.task }}" == "close" ]]; then
+          elif [[ "$task" == "close" ]]; then
             python close_review.py
-          elif [[ "${{ github.event.inputs.task }}" == "close_force" ]]; then
+          elif [[ "$task" == "close_force" ]]; then
             python close_review.py force
           fi
