@@ -1,0 +1,21 @@
+name: 仓库定时保活（防止schedule休眠）
+on:
+  schedule:
+    # UTC 0点 = 北京时间早8点，每日自动运行
+    - cron: "0 0 * * *"
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: 生成空时间戳文件
+        run: echo "$(date)" > alive.tmp
+      - name: 自动提交保活文件
+        run: |
+          git config --global user.name "Auto Bot"
+          git config --global user.email "bot@github.com"
+          git add alive.tmp
+          git commit -m "Auto keep alive, prevent schedule sleep"
+          git push origin main
