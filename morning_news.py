@@ -1,5 +1,14 @@
 import os
 import sys
+
+# 强制刷新标记
+force = len(sys.argv) > 1 and sys.argv[1] == "force"
+
+# GitHub定时调度自动执行时，强制清空当日缓存重新抓取
+if os.getenv("GITHUB_EVENT_NAME") == "schedule":
+    force = True
+import os
+import sys
 import time
 import json
 import requests
